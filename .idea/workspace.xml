@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BackendCodeEditorMiscSettings">
+    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="30" type="long" />
+    <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
+  </component>
+  <component name="CMakePresetLoader">{
+  &quot;useNewFormat&quot;: true
+}</component>
+  <component name="CMakeProjectFlavorService">
+    <option name="flavorId" value="CMakePlainProjectFlavor" />
+  </component>
+  <component name="CMakeReloadState">
+    <option name="reloaded" value="true" />
+  </component>
+  <component name="CMakeRunConfigurationManager">
+    <generated />
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="400e8739-9c35-4665-9313-a6651751c4ff" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/assimp" beforeDir="false" afterPath="$PROJECT_DIR$/lib/assimp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/glm" beforeDir="false" afterPath="$PROJECT_DIR$/lib/glm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/imgui/imgui" beforeDir="false" afterPath="$PROJECT_DIR$/lib/imgui/imgui" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/json" beforeDir="false" afterPath="$PROJECT_DIR$/lib/json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/stb/stb" beforeDir="false" afterPath="$PROJECT_DIR$/lib/stb/stb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/tinyfiledialogs/tinyfiledialogs" beforeDir="false" afterPath="$PROJECT_DIR$/lib/tinyfiledialogs/tinyfiledialogs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos/taskA.webm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos/taskB.webm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos/taskC.webm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos/taskC_save_load.webm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos/taskD.webm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos/taskE_after.webm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos/taskE_before.webm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos/taskF.webm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos/taskG.webm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos/taskH.webm" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectApplicationVersion">
+    <option name="ide" value="CLion" />
+    <option name="majorVersion" value="2025" />
+    <option name="minorVersion" value="1.1" />
+    <option name="productBranch" value="Classic" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="3C12DK0YysQTBCMF1smmNGhBz4l" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "CMake Application.cits3003_project.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.RadMigrateCodeStyle": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "RunOnceActivity.west.config.association.type.startup.service": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/Users/00096393/Downloads/cits3003_project/cits3003_project",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="400e8739-9c35-4665-9313-a6651751c4ff" name="Changes" comment="" />
+      <created>1775538634866</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1775538634866</updated>
+      <workItem from="1775538636412" duration="1856000" />
+      <workItem from="1775541787963" duration="4029000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VCPKGProject">
+    <isAutomaticCheckingOnLaunch value="false" />
+    <isAutomaticFoundErrors value="true" />
+    <isAutomaticReloadCMake value="true" />
+  </component>
+</project>
