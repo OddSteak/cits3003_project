@@ -1,9 +1,0 @@
-libdir=C:/Program Files (x86)/cits3003_project/lib
-includedir=C:/Program Files (x86)/cits3003_project/include
-
-Name: cits3003_project
-Description: Import various well-known 3D model formats in an uniform manner.
-Version: 5.2.5
-Libs: -L${libdir} -lassimp
-Libs.private:  
-Cflags: -I${includedir}
