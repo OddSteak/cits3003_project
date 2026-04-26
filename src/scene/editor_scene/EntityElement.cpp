@@ -75,7 +75,24 @@ void EditorScene::EntityElement::add_imgui_edit_section(MasterRenderScene& rende
     scene_context.model_loader.add_imgui_model_selector("Model Selection", rendered_entity->model);
     scene_context.texture_loader.add_imgui_texture_selector("Diffuse Texture", rendered_entity->render_data.diffuse_texture);
     scene_context.texture_loader.add_imgui_texture_selector("Specular Map", rendered_entity->render_data.specular_map_texture, false);
+
+    ImGui::Text("Material");
+    bool transformUpdated = false;
+    transformUpdated |= ImGui::ColorEdit3("Diffuse Tint", &material.diffuse_tint[0]);
+    transformUpdated |= ImGui::DragFloat("Diffuse Factor", &material.diffuse_tint.a, 0.01f, 0.0f, FLT_MAX);
     ImGui::Spacing();
+    transformUpdated |= ImGui::ColorEdit3("Specular Tint", &material.specular_tint[0]);
+    transformUpdated |= ImGui::DragFloat("Specular Factor", &material.specular_tint.a, 0.01f, 0.0f, FLT_MAX);
+    ImGui::Spacing();
+    transformUpdated |= ImGui::ColorEdit3("Ambient Tint", &material.ambient_tint[0]);
+    transformUpdated |= ImGui::DragFloat("Ambient Factor", &material.ambient_tint.a, 0.01f, 0.0f, FLT_MAX);
+    ImGui::Spacing();
+    transformUpdated |= ImGui::DragFloat("Shininess", &material.shininess, 1.0f, 0.0f, FLT_MAX);
+    ImGui::Spacing();
+
+    if (transformUpdated) {
+        update_instance_data();
+    }
 }
 
 void EditorScene::EntityElement::update_instance_data() {
