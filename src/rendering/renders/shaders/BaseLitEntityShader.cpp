@@ -18,6 +18,7 @@ void BaseLitEntityShader::get_uniforms_set_bindings() {
     specular_tint_location = get_uniform_location("specular_tint");
     ambient_tint_location = get_uniform_location("ambient_tint");
     shininess_location = get_uniform_location("shininess");
+    texture_scale_location = get_uniform_location("texture_scale");
     // Texture sampler bindings
     set_binding("diffuse_texture", 0);
     set_binding("specular_map_texture", 1);
@@ -39,6 +40,7 @@ void BaseLitEntityShader::set_instance_data(const BaseLitEntityInstanceData& ins
     glProgramUniform3fv(id(), specular_tint_location, 1, &scaled_specular_tint[0]);
     glProgramUniform3fv(id(), ambient_tint_location, 1, &scaled_ambient_tint[0]);
     glProgramUniform1fv(id(), shininess_location, 1, &entity_material.shininess);
+    glProgramUniform1fv(id(), texture_scale_location, 1, &entity_material.texture_scale);
 }
 
 void BaseLitEntityShader::set_point_lights(const std::vector<PointLight>& point_lights) {

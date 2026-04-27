@@ -133,7 +133,22 @@ json EditorScene::LocalTransformComponent::local_transform_into_json() const {
 void EditorScene::LitMaterialComponent::add_material_imgui_edit_section(MasterRenderScene& /*render_scene*/, const SceneContext& /*scene_context*/) {
     // Set this to true if the user has changed any of the material values, otherwise the changes won't be propagated
     bool material_changed = false;
+
     ImGui::Text("Material");
+    material_changed |= ImGui::DragFloat("Texture Scale", &material.texture_scale, 0.01f, 0.0f, FLT_MAX);
+    ImGui::Spacing();
+    material_changed |= ImGui::ColorEdit3("Diffuse Tint", &material.diffuse_tint[0]);
+    material_changed |= ImGui::DragFloat("Diffuse Factor", &material.diffuse_tint.a, 0.01f, 0.0f, FLT_MAX);
+    ImGui::Spacing();
+    material_changed |= ImGui::ColorEdit3("Specular Tint", &material.specular_tint[0]);
+    material_changed |= ImGui::DragFloat("Specular Factor", &material.specular_tint.a, 0.01f, 0.0f, FLT_MAX);
+    ImGui::Spacing();
+    material_changed |= ImGui::ColorEdit3("Ambient Tint", &material.ambient_tint[0]);
+    material_changed |= ImGui::DragFloat("Ambient Factor", &material.ambient_tint.a, 0.01f, 0.0f, FLT_MAX);
+    ImGui::Spacing();
+    material_changed |= ImGui::DragFloat("Shininess", &material.shininess, 1.0f, 0.0f, FLT_MAX);
+    ImGui::Spacing();
+
 
     // Add UI controls here
 
