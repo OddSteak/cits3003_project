@@ -83,7 +83,6 @@ void EditorScene::AnimatedEntityElement::add_imgui_edit_section(MasterRenderScen
     SceneElement::add_imgui_edit_section(render_scene, scene_context);
 
     add_local_transform_imgui_edit_section(render_scene, scene_context);
-    add_material_imgui_edit_section(render_scene, scene_context);
 
     ImGui::Text("Model & Textures");
     if (scene_context.model_loader.add_imgui_hierarchy_selector("Model Selection", rendered_entity->mesh_hierarchy)) {
@@ -92,7 +91,8 @@ void EditorScene::AnimatedEntityElement::add_imgui_edit_section(MasterRenderScen
     }
     scene_context.texture_loader.add_imgui_texture_selector("Diffuse Texture", rendered_entity->render_data.diffuse_texture);
     scene_context.texture_loader.add_imgui_texture_selector("Specular Map", rendered_entity->render_data.specular_map_texture, false);
-    ImGui::Spacing();
+
+    add_material_imgui_edit_section(render_scene, scene_context);
 }
 
 void EditorScene::AnimatedEntityElement::update_instance_data() {

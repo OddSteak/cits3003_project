@@ -72,6 +72,17 @@ void EditorScene::EmissiveEntityElement::add_imgui_edit_section(MasterRenderScen
     scene_context.model_loader.add_imgui_model_selector("Model Selection", rendered_entity->model);
     scene_context.texture_loader.add_imgui_texture_selector("Emission Texture", rendered_entity->render_data.emission_texture);
     ImGui::Spacing();
+
+    ImGui::Text("Material");
+
+    bool transformUpdated = false;
+    transformUpdated |= ImGui::ColorEdit3("Emission Tint", &material.emission_tint[0]);
+    transformUpdated |= ImGui::DragFloat("Intensity", &material.emission_tint.a, 0.01f, 0.0f, FLT_MAX);
+    ImGui::Spacing();
+
+    if (transformUpdated) {
+        update_instance_data();
+    }
 }
 
 void EditorScene::EmissiveEntityElement::update_instance_data() {

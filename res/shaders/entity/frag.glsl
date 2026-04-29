@@ -13,10 +13,12 @@ uniform float inverse_gamma;
 
 uniform sampler2D diffuse_texture;
 uniform sampler2D specular_map_texture;
+uniform float texture_scale;
 
 void main() {
     // Resolve the per vertex lighting with per fragment texture sampling.
-    vec3 resolved_lighting = resolve_textured_light_calculation(frag_in.lighting_result, diffuse_texture, specular_map_texture, frag_in.texture_coordinate);
+    vec2 scaled_uv = frag_in.texture_coordinate * texture_scale;
+    vec3 resolved_lighting = resolve_textured_light_calculation(frag_in.lighting_result, diffuse_texture, specular_map_texture, scaled_uv);
 
     out_colour = vec4(resolved_lighting, 1.0f);
     out_colour.rgb = pow(out_colour.rgb, vec3(inverse_gamma));
