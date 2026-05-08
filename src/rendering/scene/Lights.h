@@ -11,26 +11,27 @@
 struct PointLight {
     PointLight() = default;
 
-    PointLight(const glm::vec3& position, const glm::vec4& colour) :
-        position(position), colour(colour) {}
+    PointLight(const glm::vec3& position, const glm::vec4& colour, float attenuation = 0.1f) :
+        position(position), colour(colour), attenuation(attenuation) {}
 
     static PointLight off() {
-        return {glm::vec3{}, glm::vec4{}};
+        return {glm::vec3{}, glm::vec4{}, 0.0f};
     }
 
-    static std::shared_ptr<PointLight> create(const glm::vec3& position, const glm::vec4& colour) {
-        return std::make_shared<PointLight>(position, colour);
+    static std::shared_ptr<PointLight> create(const glm::vec3& position, const glm::vec4& colour, float attenuation = 0.1f) {
+        return std::make_shared<PointLight>(position, colour, attenuation);
     }
-
     glm::vec3 position{};
     // Alpha components are just used to store a scalar that is applied before passing to the GPU
     glm::vec4 colour{};
+    float attenuation{0.1f}; // The higher this is, the more quickly the light attenuates with distance
 
     // On GPU format
     // alignas used to conform to std140 for direct binary usage with glsl
     struct Data {
         alignas(16) glm::vec3 position;
         alignas(16) glm::vec3 colour;
+        float attenuation;
     };
 };
 
