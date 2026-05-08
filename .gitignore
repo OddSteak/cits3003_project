@@ -3,3 +3,4 @@ cits3003_project
 *.exe
 *.json
 build/
+/.claude
