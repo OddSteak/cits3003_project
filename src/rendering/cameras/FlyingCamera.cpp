@@ -101,7 +101,7 @@ void FlyingCamera::update(const Window& window, float dt, bool controlsEnabled) 
         glm::translate(-position);
     inverse_view_matrix = glm::inverse(view_matrix);
 
-    projection_matrix = glm::infinitePerspective(fov, window.get_framebuffer_aspect_ratio(), 1.0f);
+    projection_matrix = glm::infinitePerspective(fov, window.get_framebuffer_aspect_ratio(), near);
     inverse_projection_matrix = glm::inverse(projection_matrix);
 }
 
