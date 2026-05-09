@@ -34,6 +34,14 @@ void MasterRenderScene::insert_light(std::shared_ptr<PointLight> point_light) {
     light_scene.point_lights.insert(std::move(point_light));
 }
 
+void MasterRenderScene::insert_dir_light(std::shared_ptr<TheSun> sun_light) {
+    light_scene.sun_lights.insert(std::move(sun_light));
+}
+
 bool MasterRenderScene::remove_light(const std::shared_ptr<PointLight>& point_light) {
     return light_scene.point_lights.erase(point_light) != 0;
+}
+
+bool MasterRenderScene::remove_dir_light(const std::shared_ptr<TheSun>& sun_light) {
+    return light_scene.sun_lights.erase(sun_light) != 0;
 }

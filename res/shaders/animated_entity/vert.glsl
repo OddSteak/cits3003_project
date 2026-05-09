@@ -30,6 +30,12 @@ layout (std140) uniform PointLightArray {
 };
 #endif
 
+#if NUM_DL > 0
+layout (std140) uniform SunLightArray {
+    SunLightData sun_lights[NUM_DL];
+};
+#endif
+
 // Animation Data
 uniform mat4 bone_transforms[BONE_TRANSFORMS];
 
@@ -67,6 +73,9 @@ void main() {
     vertex_out.lighting_result = total_light_calculation(light_calculation_data, material
         #if NUM_PL > 0
         ,point_lights
+        #endif
+        #if NUM_DL > 0
+        ,sun_lights
         #endif
     );
 }

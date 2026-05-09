@@ -6,7 +6,7 @@ BaseLitEntityShader::BaseLitEntityShader(std::string name, const std::string& ve
                                          std::unordered_map<std::string, std::string> vert_defines,
                                          std::unordered_map<std::string, std::string> frag_defines) :
     BaseEntityShader(std::move(name), vertex_path, fragment_path, std::move(vert_defines), std::move(frag_defines)),
-    point_lights_ubo({}, false) {
+    point_lights_ubo({}, false), sun_lights_ubo({}, false) {
 
     get_uniforms_set_bindings();
 }
@@ -24,6 +24,7 @@ void BaseLitEntityShader::get_uniforms_set_bindings() {
     set_binding("specular_map_texture", 1);
     // Uniform block bindings
     set_block_binding("PointLightArray", POINT_LIGHT_BINDING);
+    set_block_binding("SunLightArray", SUN_LIGHT_BINDING);
 }
 
 void BaseLitEntityShader::set_instance_data(const BaseLitEntityInstanceData& instance_data) {
@@ -59,4 +60,21 @@ void BaseLitEntityShader::set_point_lights(const std::vector<PointLight>& point_
     set_vert_define("NUM_PL", Formatter() << count);
     point_lights_ubo.bind(POINT_LIGHT_BINDING);
     point_lights_ubo.upload();
+}
+
+void BaseLitEntityShader::set_direction_lights(const std::vector<TheSun>& sun_lights) {
+    uint count = std::min(MAX_DL, (uint) sun_lights.size());
+
+    for (uint i = 0; i < count; i++) {
+        const TheSun& sun_light = sun_lights[i];
+
+        glm::vec3 scaled_colour = glm::vec3(sun_light.colour) * sun_light.colour.a;
+
+        sun_lights_ubo.data[i].direction = sun_light.direction;
+        sun_lights_ubo.data[i].colour = scaled_colour;
+    }
+
+    set_vert_define("NUM_DL", Formatter() << count);
+    sun_lights_ubo.bind(SUN_LIGHT_BINDING);
+    sun_lights_ubo.upload();
 }

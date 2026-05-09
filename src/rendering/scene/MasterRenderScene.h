@@ -34,8 +34,10 @@ public:
     bool remove_entity(const std::shared_ptr<EmissiveEntityRenderer::Entity>& entity);
 
     void insert_light(std::shared_ptr<PointLight> point_light);
+    void insert_dir_light(std::shared_ptr<TheSun> sun_light);
 
     bool remove_light(const std::shared_ptr<PointLight>& point_light);
+    bool remove_dir_light(const std::shared_ptr<TheSun>& sun_light);
 
     /// Propagates a camera state to all the render scenes
     void use_camera(const CameraInterface& camera_interface);

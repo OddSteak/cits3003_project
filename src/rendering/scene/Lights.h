@@ -35,10 +35,35 @@ struct PointLight {
     };
 };
 
+struct TheSun {
+    TheSun() = default;
+
+    TheSun(const glm::vec3& direction, const glm::vec4& colour) :
+        direction(direction), colour(colour) {}
+
+    // return a zero direction and zero colour light
+    static TheSun off() {
+        return {glm::vec3{}, glm::vec4{}};
+    }
+
+    static std::shared_ptr<TheSun> create(const glm::vec3& direction, const glm::vec4& colour) {
+        return std::make_shared<TheSun>(direction, colour);
+    }
+
+    glm::vec3 direction{};
+    glm::vec4 colour{};
+
+    struct Data {
+        alignas(16) glm::vec3 direction;
+        alignas(16) glm::vec3 colour;
+    };
+};
+
 /// A collection of each light type, with helpers that allow for selecting a subset of
 /// those lights on a proximity basis, since processing an unbounded number of lights on the GPU is bad idea.
 struct LightScene {
     std::unordered_set<std::shared_ptr<PointLight>> point_lights;
+    std::unordered_set<std::shared_ptr<TheSun>> sun_lights;
 
     /// Will return up to `max_count` nearest point lights to `target`.
     /// It returns less than `max_count` if there are not that many point lights,
@@ -55,6 +80,7 @@ struct LightScene {
     ///       as well as support incrementally getting the `k` nearest.
     ///
     std::vector<PointLight> get_nearest_point_lights(glm::vec3 target, size_t max_count, size_t min_count = 0) const;
+    std::vector<TheSun> get_nearest_sun_lights(glm::vec3 target, size_t max_count, size_t min_count = 0) const;
 
 private:
     template<typename Light>
