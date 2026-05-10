@@ -128,6 +128,7 @@ add_executable(cits3003_project
         src/scene/editor_scene/EntityElement.cpp
         src/scene/editor_scene/AnimatedEntityElement.cpp
         src/scene/editor_scene/PointLightElement.cpp
+        src/scene/editor_scene/SunLightElement.cpp
         src/scene/editor_scene/GroupElement.cpp
         src/scene/editor_scene/EmissiveEntityElement.cpp
         src/scene/editor_scene/SceneElement.cpp

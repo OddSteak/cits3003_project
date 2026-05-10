@@ -22,6 +22,12 @@ layout (std140) uniform PointLightArray {
 };
 #endif
 
+#if NUM_DL > 0
+layout (std140) uniform SunLightArray {
+    SunLightData sun_lights[NUM_DL];
+};
+#endif
+
 // Global Data
 uniform vec3 ws_view_position;
 uniform float inverse_gamma;
@@ -38,6 +44,9 @@ void main() {
     LightingResult lighting_result = total_light_calculation(light_calculation_data, material
         #if NUM_PL > 0
         ,point_lights
+        #endif
+        #if NUM_DL > 0
+        ,sun_lights
         #endif
     );
 

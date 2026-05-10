@@ -22,6 +22,12 @@ layout (std140) uniform PointLightArray {
 };
 #endif
 
+#if NUM_DL > 0
+layout (std140) uniform SunLightArray {
+    SunLightData sun_lights[NUM_DL];
+};
+#endif
+
 // Global Data
 uniform vec3 ws_view_position;
 uniform float inverse_gamma;
@@ -31,6 +37,7 @@ uniform sampler2D specular_map_texture;
 uniform float texture_scale;
 
 void main() {
+    // Per vertex light calcs are below this point
     vec3 ws_view_dir = normalize(ws_view_position - frag_in.ws_position);
     LightCalculatioData light_calculation_data = LightCalculatioData(frag_in.ws_position, ws_view_dir, frag_in.ws_normal);
     Material material = Material(diffuse_tint, specular_tint, ambient_tint, shininess);
@@ -38,6 +45,9 @@ void main() {
     LightingResult lighting_result = total_light_calculation(light_calculation_data, material
         #if NUM_PL > 0
         ,point_lights
+        #endif
+        #if NUM_DL > 0
+        ,sun_lights
         #endif
     );
 

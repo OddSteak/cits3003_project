@@ -2,6 +2,10 @@
 #define NUM_PL 0
 #endif
 
+#ifndef NUM_DL
+#define NUM_DL 0
+#endif
+
 // Material Properties
 struct Material {
     vec3 diffuse_tint;
@@ -21,6 +25,11 @@ struct PointLightData {
     vec3 position;
     vec3 colour;
     float attenuation;
+};
+
+struct SunLightData {
+    vec3 direction;
+    vec3 colour;
 };
 
 // Calculations
@@ -53,6 +62,26 @@ void point_light_calculation(PointLightData point_light, LightCalculatioData cal
     total_ambient += ambient_component * attenuation;
 }
 
+void sun_light_calculation(SunLightData sun_light, LightCalculatioData calculation_data, float shininess, inout vec3 total_diffuse, inout vec3 total_specular, inout vec3 total_ambient) {
+    // Ambient
+    vec3 ambient_component = ambient_factor * sun_light.colour;
+
+    // Diffuse
+    // the direction is constant regardless of position of the fragment
+    vec3 ws_light_dir = -normalize(sun_light.direction);
+    float diffuse_factor = max(dot(ws_light_dir, calculation_data.ws_normal), 0.0f);
+    vec3 diffuse_component = diffuse_factor * sun_light.colour;
+
+    // Specular
+    vec3 ws_halfway_dir = normalize(ws_light_dir + calculation_data.ws_view_dir);
+    float specular_factor = pow(max(dot(calculation_data.ws_normal, ws_halfway_dir), 0.0f), shininess);
+    vec3 specular_component = specular_factor * sun_light.colour;
+
+    total_diffuse += diffuse_component;
+    total_specular += specular_component;
+    total_ambient += ambient_component;
+}
+
 // Total Calculation
 
 struct LightingResult {
@@ -64,6 +93,9 @@ struct LightingResult {
 LightingResult total_light_calculation(LightCalculatioData light_calculation_data, Material material
         #if NUM_PL > 0
         ,PointLightData point_lights[NUM_PL]
+        #endif
+        #if NUM_DL > 0
+        ,SunLightData sun_lights[NUM_DL]
         #endif
     ) {
 
@@ -77,8 +109,14 @@ LightingResult total_light_calculation(LightCalculatioData light_calculation_dat
     }
     #endif
 
-    #if NUM_PL > 0
-    total_ambient /= float(NUM_PL);
+    #if NUM_DL > 0
+    for (int i = 0; i < NUM_DL; i++) {
+        sun_light_calculation(sun_lights[i], light_calculation_data, material.shininess, total_diffuse, total_specular, total_ambient);
+    }
+    #endif
+
+    #if NUM_PL > 0 || NUM_DL > 0
+    total_ambient /= float(NUM_PL + NUM_DL);
     #endif
 
     total_diffuse *= material.diffuse_tint;
