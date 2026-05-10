@@ -12,15 +12,21 @@ namespace EditorScene {
         static constexpr const char* ELEMENT_TYPE_NAME = "Directional Light";
 
         // Local transformation
+        glm::vec3 position;
         glm::vec3 direction;
         bool visible = true;
         float visual_scale = 1.0f;
-        // PointLight and Entity will store World position
+        // Light stores direction; entities store world transform
         std::shared_ptr<TheSun> light;
-        std::shared_ptr<EmissiveEntityRenderer::Entity> light_sphere;
+        std::shared_ptr<EmissiveEntityRenderer::Entity> light_body;  // Cylinder body
+        std::shared_ptr<EmissiveEntityRenderer::Entity> light_face;  // Bright emitting face
 
-        SunLightElement(const ElementRef& parent, std::string name, glm::vec3 direction, std::shared_ptr<TheSun> light, std::shared_ptr<EmissiveEntityRenderer::Entity> light_sphere) :
-            SceneElement(parent, std::move(name)), direction(direction), light(std::move(light)), light_sphere(std::move(light_sphere)) {}
+        SunLightElement(const ElementRef& parent, std::string name, glm::vec3 position, glm::vec3 direction,
+                        std::shared_ptr<TheSun> light,
+                        std::shared_ptr<EmissiveEntityRenderer::Entity> light_body,
+                        std::shared_ptr<EmissiveEntityRenderer::Entity> light_face) :
+            SceneElement(parent, std::move(name)), position(position), direction(direction),
+            light(std::move(light)), light_body(std::move(light_body)), light_face(std::move(light_face)) {}
 
         static std::unique_ptr<SunLightElement> new_default(const SceneContext& scene_context, ElementRef parent);
         static std::unique_ptr<SunLightElement> from_json(const SceneContext& scene_context, ElementRef parent, const json& j);
@@ -32,12 +38,14 @@ namespace EditorScene {
         void update_instance_data() override;
 
         void add_to_render_scene(MasterRenderScene& target_render_scene) override {
-            target_render_scene.insert_entity(light_sphere);
+            target_render_scene.insert_entity(light_body);
+            target_render_scene.insert_entity(light_face);
             target_render_scene.insert_dir_light(light);
         }
 
         void remove_from_render_scene(MasterRenderScene& target_render_scene) override {
-            target_render_scene.remove_entity(light_sphere);
+            target_render_scene.remove_entity(light_body);
+            target_render_scene.remove_entity(light_face);
             target_render_scene.remove_dir_light(light);
         }
 
