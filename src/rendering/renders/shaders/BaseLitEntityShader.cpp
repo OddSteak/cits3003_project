@@ -56,7 +56,7 @@ void BaseLitEntityShader::set_point_lights(const std::vector<PointLight>& point_
         point_lights_ubo.data[i].attenuation = point_light.attenuation;
     }
 
-    set_vert_define("NUM_PL", Formatter() << count);
+    set_frag_define("NUM_PL", Formatter() << count);
     point_lights_ubo.bind(POINT_LIGHT_BINDING);
     point_lights_ubo.upload();
 }
