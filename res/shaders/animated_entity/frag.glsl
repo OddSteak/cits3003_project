@@ -38,11 +38,11 @@ uniform float texture_scale;
 
 void main() {
     // Per vertex light calcs are below this point
-    vec3 ws_view_dir = normalize(ws_view_position - ws_position);
-    LightCalculatioData light_calculation_data = LightCalculatioData(ws_position, ws_view_dir, ws_normal);
+    vec3 ws_view_dir = normalize(ws_view_position - frag_in.ws_position);
+    LightCalculatioData light_calculation_data = LightCalculatioData(frag_in.ws_position, ws_view_dir, frag_in.ws_normal);
     Material material = Material(diffuse_tint, specular_tint, ambient_tint, shininess);
 
-    vertex_out.lighting_result = total_light_calculation(light_calculation_data, material
+    LightingResult lighting_result = total_light_calculation(light_calculation_data, material
         #if NUM_PL > 0
         ,point_lights
         #endif
