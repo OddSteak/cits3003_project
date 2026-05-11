@@ -54,7 +54,7 @@ void EditorScene::LocalTransformComponent::add_local_transform_imgui_edit_sectio
         static bool lock_scale = true;
 
         glm::vec3 temp_scale = scale;
-        if (ImGui::DragFloat3("Scale", &temp_scale[0], 0.01f)) {
+        if (ImGui::DragFloat("Scale", &temp_scale[0], 0.01f)) {
             transformUpdated = true;
 
             if (lock_scale) {
