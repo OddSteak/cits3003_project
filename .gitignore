@@ -4,4 +4,4 @@ cits3003_project
 *.json
 build/
 /.claude
-.imgui.ini
+imgui.ini
