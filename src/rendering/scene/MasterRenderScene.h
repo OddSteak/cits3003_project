@@ -7,6 +7,7 @@
 #include "RenderScene.h"
 #include "RenderedEntity.h"
 #include "Animator.h"
+#include "CustomAnimator.h"
 #include "rendering/renders/EntityRenderer.h"
 #include "rendering/renders/AnimatedEntityRenderer.h"
 #include "rendering/renders/EmissiveEntityRenderer.h"
@@ -24,6 +25,7 @@ public:
     MasterRenderScene() = default;
 
     Animator animator{};
+    CustomAnimator custom_animator{};
 
     void insert_entity(std::shared_ptr<EntityRenderer::Entity> entity);
     void insert_entity(std::shared_ptr<AnimatedEntityRenderer::Entity> entity);

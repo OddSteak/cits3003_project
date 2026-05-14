@@ -2,6 +2,7 @@
 
 #include <glm/gtx/transform.hpp>
 
+#include "rendering/imgui/ImGuiManager.h"
 #include "scene/SceneContext.h"
 
 std::unique_ptr<EditorScene::AnimatedEntityElement>
@@ -60,6 +61,13 @@ EditorScene::AnimatedEntityElement::from_json(const SceneContext &scene_context,
   new_entity->rendered_entity->animation_time_seconds =
       animation_parameters["animation_time_seconds"];
 
+  if (j.contains("motion_parameters")) {
+    auto mp = j["motion_parameters"];
+    new_entity->motion_parameters.translation_velocity = mp["translation_velocity"];
+    new_entity->motion_parameters.rotation_velocity = mp["rotation_velocity"];
+    new_entity->motion_parameters.enabled = mp["enabled"];
+  }
+
   new_entity->update_instance_data();
   return new_entity;
 }
@@ -87,6 +95,12 @@ json EditorScene::AnimatedEntityElement::into_json() const {
            {"paused", animation_parameters.paused},
            {"loop", animation_parameters.loop},
            {"animation_time_seconds", rendered_entity->animation_time_seconds},
+       }},
+      {"motion_parameters",
+       {
+           {"translation_velocity", motion_parameters.translation_velocity},
+           {"rotation_velocity", motion_parameters.rotation_velocity},
+           {"enabled", motion_parameters.enabled},
        }}};
 }
 
@@ -110,16 +124,15 @@ void EditorScene::AnimatedEntityElement::add_imgui_edit_section(
 
   add_material_imgui_edit_section(render_scene, scene_context);
 
-  ImGui::Text("Custom Animation");
-  bool transformUpdated = false;
-
-  transformUpdated |= ImGui::DragFloat3(
-      "Translation", &motion_parameters.translation_velocity[0], 0.01f);
-  transformUpdated |= ImGui::DragFloat3(
-      "Rotation", &motion_parameters.rotation_velocity[0], 0.01f);
-  transformUpdated |= ImGui::Checkbox("Enabled", &motion_parameters.enabled);
-
-  if (transformUpdated) update_instance_data();
+  ImGui::Spacing();
+  ImGui::Separator();
+  ImGui::Spacing();
+  ImGui::Text("Custom Motion");
+  ImGui::Checkbox("Enable in Play All", &motion_parameters.enabled);
+  ImGui::DragFloat3("Translation (units/s)", &motion_parameters.translation_velocity[0], 0.01f);
+  ImGui::DragDisableCursor(scene_context.window);
+  ImGui::DragFloat3("Rotation (deg/s)", &motion_parameters.rotation_velocity[0], 0.1f);
+  ImGui::DragDisableCursor(scene_context.window);
 }
 
 void EditorScene::AnimatedEntityElement::update_instance_data() {

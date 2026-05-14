@@ -46,6 +46,8 @@ namespace EditorScene {
         /// The current save path
         std::optional<std::string> save_path{};
 
+        bool is_custom_playing = false;
+
         // The RenderScene of the Scene
         MasterRenderScene render_scene{};
     public:

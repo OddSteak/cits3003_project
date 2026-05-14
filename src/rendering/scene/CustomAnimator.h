@@ -1,72 +1,133 @@
 #ifndef CUSTOM_ANIMATOR_H
 #define CUSTOM_ANIMATOR_H
 
+#include <functional>
+#include <optional>
 #include <unordered_map>
+
+#include <glm/glm.hpp>
+
 #include "rendering/scene/RenderedEntity.h"
 
 struct CustomMotionParams {
-  glm::vec3 translation_velocity = {0.0f, 0.0f, 0.0f};
-  glm::vec3 rotation_velocity = {0.0f, 0.0f, 0.0f};
-  bool enabled = false;
+    glm::vec3 translation_velocity = {0.0f, 0.0f, 0.0f}; // units/second
+    glm::vec3 rotation_velocity    = {0.0f, 0.0f, 0.0f}; // degrees/second
+    bool enabled = false;
 };
 
 class CustomAnimator {
-  struct AnimatedEntry {
-    CustomMotionParams parameters;
-    glm::vec3 position_velocity;
-    glm::vec3 rotation_velocity;
-  };
+    struct AnimatedEntry {
+        CustomMotionParams parameters;
+        glm::vec3 initial_position;
+        glm::vec3 initial_rotation;
+        glm::vec3* position_ptr;
+        glm::vec3* rotation_ptr;
+        std::function<void()> update_fn;
+        bool paused = false;
+    };
 
-  std::unordered_map<std::shared_ptr<AnimatedEntityInterface>, AnimatedEntry>
-      animated_entities{};
+    std::unordered_map<std::shared_ptr<AnimatedEntityInterface>, AnimatedEntry> animated_entities{};
 
 public:
+    void animate(double dt);
 
-  void animate(double dt);
+    template <class AnimatedEntity>
+    void start(std::shared_ptr<AnimatedEntity> animated_entity,
+               CustomMotionParams params,
+               glm::vec3& position,
+               glm::vec3& rotation,
+               std::function<void()> update_fn);
 
-  /// Start animating an entity with the given parameters. If it was already
-  /// present then reset to t=0 and use new parameters.
-  template <class AnimatedEntity>
-  void start(std::shared_ptr<AnimatedEntity> animated_entity,
-             CustomMotionParams animation_parameters);
+    template <class AnimatedEntity>
+    void update_param(std::shared_ptr<AnimatedEntity> animated_entity,
+                      CustomMotionParams params);
 
-  /// Update the parameters on an animating entity with the given parameters.
-  /// If it was not already present then nothing happens.
-  template <class AnimatedEntity>
-  void update_param(std::shared_ptr<AnimatedEntity> animated_entity,
-                    CustomMotionParams parameters);
+    template <class AnimatedEntity>
+    void pause(std::shared_ptr<AnimatedEntity> animated_entity);
 
-  /// Pause an animating entity if it's currently play
-  template <class AnimatedEntity>
-  void pause(std::shared_ptr<AnimatedEntity> animated_entity);
+    template <class AnimatedEntity>
+    void resume(std::shared_ptr<AnimatedEntity> animated_entity,
+                CustomMotionParams params);
 
-  /// Resumes a paused entity, also updating the animation parameters.
-  /// If the entity is not currently present, then start animating it with these
-  /// parameters at t=0
-  template <class AnimatedEntity>
-  void resume(std::shared_ptr<AnimatedEntity> animated_entity,
-              CustomMotionParams animation_parameters);
+    template <class AnimatedEntity>
+    std::optional<CustomMotionParams> is_animating(const std::shared_ptr<AnimatedEntity>& animated_entity);
 
-  /// Checks if an entity is currently animating, if so returns it's current
-  /// parameters.
-  template <class AnimatedEntity>
-  std::optional<CustomMotionParams()>
-  is_animating(const std::shared_ptr<AnimatedEntity> &animated_entity);
+    template <class AnimatedEntity>
+    void stop(const std::shared_ptr<AnimatedEntity>& animated_entity);
 
-  /// Stop an entity from animationg, does nothing it it was already stopped.
-  template <class AnimatedEntity>
-  void stop(const std::shared_ptr<AnimatedEntity> &animated_entity);
+    void stop_all();
 };
 
 template <class AnimatedEntity>
 void CustomAnimator::start(std::shared_ptr<AnimatedEntity> animated_entity,
-                     CustomMotionParams animation_parameters) {
-  stop(animated_entity);
-  auto aei =
-      std::dynamic_pointer_cast<AnimatedEntityInterface>(animated_entity);
-  aei->get_animation_id() = animation_parameters.animation_id;
-  aei->get_animation_time_seconds() = 0.0;
-  animated_entities[aei] = animation_parameters;
+                           CustomMotionParams params,
+                           glm::vec3& position,
+                           glm::vec3& rotation,
+                           std::function<void()> update_fn) {
+    stop(animated_entity);
+    auto aei = std::dynamic_pointer_cast<AnimatedEntityInterface>(animated_entity);
+    animated_entities[aei] = AnimatedEntry{
+        params,
+        position,   // snapshot of position at start time
+        rotation,   // snapshot of rotation at start time
+        &position,
+        &rotation,
+        update_fn,
+        false
+    };
+}
+
+template <class AnimatedEntity>
+void CustomAnimator::update_param(std::shared_ptr<AnimatedEntity> animated_entity,
+                                  CustomMotionParams params) {
+    auto aei = std::dynamic_pointer_cast<AnimatedEntityInterface>(animated_entity);
+    auto it = animated_entities.find(aei);
+    if (it != animated_entities.end()) {
+        it->second.parameters = params;
+    }
+}
+
+template <class AnimatedEntity>
+void CustomAnimator::pause(std::shared_ptr<AnimatedEntity> animated_entity) {
+    auto aei = std::dynamic_pointer_cast<AnimatedEntityInterface>(animated_entity);
+    auto it = animated_entities.find(aei);
+    if (it != animated_entities.end()) {
+        it->second.paused = true;
+    }
+}
+
+template <class AnimatedEntity>
+void CustomAnimator::resume(std::shared_ptr<AnimatedEntity> animated_entity,
+                            CustomMotionParams params) {
+    auto aei = std::dynamic_pointer_cast<AnimatedEntityInterface>(animated_entity);
+    auto it = animated_entities.find(aei);
+    if (it != animated_entities.end()) {
+        it->second.parameters = params;
+        it->second.paused = false;
+    }
+}
+
+template <class AnimatedEntity>
+std::optional<CustomMotionParams>
+CustomAnimator::is_animating(const std::shared_ptr<AnimatedEntity>& animated_entity) {
+    auto aei = std::dynamic_pointer_cast<AnimatedEntityInterface>(animated_entity);
+    auto it = animated_entities.find(aei);
+    if (it != animated_entities.end()) {
+        return it->second.parameters;
+    }
+    return std::nullopt;
+}
+
+template <class AnimatedEntity>
+void CustomAnimator::stop(const std::shared_ptr<AnimatedEntity>& animated_entity) {
+    auto aei = std::dynamic_pointer_cast<AnimatedEntityInterface>(animated_entity);
+    auto it = animated_entities.find(aei);
+    if (it != animated_entities.end()) {
+        *it->second.position_ptr = it->second.initial_position;
+        *it->second.rotation_ptr = it->second.initial_rotation;
+        it->second.update_fn();
+        animated_entities.erase(it);
+    }
 }
 
 #endif // CUSTOM_ANIMATOR_H
