@@ -157,6 +157,51 @@ void EditorScene::EditorScene::add_imgui_options_section() {
         }
         ImGui::Separator();
     }
+
+    if (ImGui::CollapsingHeader("Custom Animation")) {
+        if (!is_custom_playing) {
+            if (ImGui::Button("Play All")) {
+                is_custom_playing = true;
+                auto walk = [&](auto& self, ElementList& list) -> void {
+                    for (auto& element : *list) {
+                        auto* anim = dynamic_cast<AnimatedEntityElement*>(element.get());
+                        if (anim != nullptr && anim->motion_parameters.enabled) {
+                            render_scene.custom_animator.start(
+                                anim->rendered_entity,
+                                anim->motion_parameters,
+                                anim->position,
+                                anim->euler_rotation,
+                                [anim]() { anim->update_instance_data(); }
+                            );
+                            if (anim->animation_parameters.animation_id != NONE_ANIMATION) {
+                                render_scene.animator.start(anim->get_entity(), anim->animation_parameters);
+                            }
+                        }
+                        auto children = element->get_children();
+                        if (children != nullptr) self(self, children);
+                    }
+                };
+                walk(walk, scene_root);
+            }
+        } else {
+            if (ImGui::Button("Stop All")) {
+                is_custom_playing = false;
+                render_scene.custom_animator.stop_all();
+                std::function<void(ElementList&)> stop_skeletal;
+                stop_skeletal = [&](ElementList& list) {
+                    for (auto& element : *list) {
+                        auto* anim = dynamic_cast<AnimatedEntityElement*>(element.get());
+                        if (anim != nullptr && anim->motion_parameters.enabled) {
+                            render_scene.animator.stop(anim->get_entity());
+                        }
+                        auto children = element->get_children();
+                        if (children != nullptr) stop_skeletal(children);
+                    }
+                };
+                stop_skeletal(scene_root);
+            }
+        }
+    }
 }
 
 MasterRenderScene& EditorScene::EditorScene::get_render_scene() {
@@ -612,6 +657,7 @@ void EditorScene::EditorScene::load_from_json_file(const SceneContext& scene_con
     std::swap(scene_root, old_scene_root);
     try {
         selected_element = NullElementRef;
+        is_custom_playing = false;
 
         std::ifstream f(save_path.value());
         json data = json::parse(f);

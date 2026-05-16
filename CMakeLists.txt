@@ -105,6 +105,7 @@ add_executable(cits3003_project
         src/rendering/resources/ModelLoader.cpp
         src/rendering/scene/MasterRenderScene.cpp
         src/rendering/scene/Animator.cpp
+        src/rendering/scene/CustomAnimator.cpp
         src/rendering/scene/Lights.cpp
         src/rendering/renders/MasterRenderer.cpp
         src/rendering/renders/shaders/ShaderInterface.cpp

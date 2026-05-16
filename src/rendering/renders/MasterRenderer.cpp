@@ -20,6 +20,7 @@ void MasterRenderer::update(const Window& window) {
 
 void MasterRenderer::render_scene(MasterRenderScene& render_scene, const SceneContext& scene_context) {
     render_scene.animator.animate(scene_context.window_manager.get_delta_time());
+    render_scene.custom_animator.animate(scene_context.window_manager.get_delta_time());
     entity_renderer.render(render_scene.entity_scene, render_scene.light_scene);
     animated_entity_renderer.render(render_scene.animated_entity_scene, render_scene.light_scene);
     emissive_entity_renderer.render(render_scene.emissive_entity_scene);
