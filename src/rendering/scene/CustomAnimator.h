@@ -9,10 +9,23 @@
 
 #include "rendering/scene/RenderedEntity.h"
 
+enum class CustomMotionType {
+    None,
+    Move,
+    Rotate
+};
+
 struct CustomMotionParams {
-    glm::vec3 translation_velocity = {0.0f, 0.0f, 0.0f}; // units/second
-    glm::vec3 rotation_velocity    = {0.0f, 0.0f, 0.0f}; // degrees/second
+    CustomMotionType motion_type = CustomMotionType::None;
     bool enabled = false;
+
+    // Move parameters
+    glm::vec3 move_initial{0.0f, 0.0f, 0.0f};
+    glm::vec3 move_final{0.0f, 0.0f, 0.0f};
+    float move_speed = 1.0f;
+
+    // Rotate parameters
+    glm::vec3 rotation_velocity{0.0f, 0.0f, 0.0f}; // degrees/second per axis
 };
 
 class CustomAnimator {
@@ -24,6 +37,10 @@ class CustomAnimator {
         glm::vec3* rotation_ptr;
         std::function<void()> update_fn;
         bool paused = false;
+        // Move-specific: computed velocity and stopping state
+        glm::vec3 translation_velocity{0.0f};
+        glm::vec3 final_position{0.0f};
+        bool reached_final = false;
     };
 
     std::unordered_map<std::shared_ptr<AnimatedEntityInterface>, AnimatedEntry> animated_entities{};
@@ -66,15 +83,33 @@ void CustomAnimator::start(std::shared_ptr<AnimatedEntity> animated_entity,
                            std::function<void()> update_fn) {
     stop(animated_entity);
     auto aei = std::dynamic_pointer_cast<AnimatedEntityInterface>(animated_entity);
-    animated_entities[aei] = AnimatedEntry{
-        params,
-        position,   // snapshot of position at start time
-        rotation,   // snapshot of rotation at start time
-        &position,
-        &rotation,
-        update_fn,
-        false
-    };
+
+    AnimatedEntry entry{};
+    entry.parameters = params;
+    entry.initial_rotation = rotation;
+    entry.rotation_ptr = &rotation;
+    entry.update_fn = update_fn;
+    entry.paused = false;
+    entry.reached_final = false;
+
+    if (params.motion_type == CustomMotionType::Move) {
+        // Snap entity to the user-defined initial position
+        position = params.move_initial;
+        update_fn();
+        entry.initial_position = params.move_initial;
+        entry.position_ptr = &position;
+        entry.final_position = params.move_final;
+        glm::vec3 delta = params.move_final - params.move_initial;
+        float dist = glm::length(delta);
+        if (dist > 0.0001f) {
+            entry.translation_velocity = glm::normalize(delta) * params.move_speed;
+        }
+    } else {
+        entry.initial_position = position;
+        entry.position_ptr = &position;
+    }
+
+    animated_entities[aei] = std::move(entry);
 }
 
 template <class AnimatedEntity>

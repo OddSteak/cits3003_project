@@ -10,6 +10,8 @@
 #include "../SceneInterface.h"
 #include "scene/SceneContext.h"
 
+struct CustomMotionParams; // defined in CustomAnimator.h
+
 namespace EditorScene {
     class SceneElement;
 
@@ -136,6 +138,7 @@ namespace EditorScene {
         /// Getters to be overridden
         [[nodiscard]] virtual std::shared_ptr<AnimatedEntityInterface> get_entity() = 0;
         [[nodiscard]] virtual AnimationParameters& get_animation_parameters() = 0;
+        [[nodiscard]] virtual CustomMotionParams* get_motion_params() { return nullptr; }
     };
 
     /// Helper to checking if an ElementRef is equal to NullElementRef, needed since `ref == NullElementRef` will
