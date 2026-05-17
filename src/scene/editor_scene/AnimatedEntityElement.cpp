@@ -63,9 +63,16 @@ EditorScene::AnimatedEntityElement::from_json(const SceneContext &scene_context,
 
   if (j.contains("motion_parameters")) {
     auto mp = j["motion_parameters"];
-    new_entity->motion_parameters.translation_velocity = mp["translation_velocity"];
-    new_entity->motion_parameters.rotation_velocity = mp["rotation_velocity"];
-    new_entity->motion_parameters.enabled = mp["enabled"];
+    new_entity->motion_parameters.enabled = mp.value("enabled", false);
+    int motion_type_int = mp.value("motion_type", 0);
+    new_entity->motion_parameters.motion_type = static_cast<CustomMotionType>(motion_type_int);
+    if (mp.contains("move_initial"))
+      new_entity->motion_parameters.move_initial = mp["move_initial"];
+    if (mp.contains("move_final"))
+      new_entity->motion_parameters.move_final = mp["move_final"];
+    new_entity->motion_parameters.move_speed = mp.value("move_speed", 1.0f);
+    if (mp.contains("rotation_velocity"))
+      new_entity->motion_parameters.rotation_velocity = mp["rotation_velocity"];
   }
 
   new_entity->update_instance_data();
@@ -98,9 +105,12 @@ json EditorScene::AnimatedEntityElement::into_json() const {
        }},
       {"motion_parameters",
        {
-           {"translation_velocity", motion_parameters.translation_velocity},
-           {"rotation_velocity", motion_parameters.rotation_velocity},
+           {"motion_type", static_cast<int>(motion_parameters.motion_type)},
            {"enabled", motion_parameters.enabled},
+           {"move_initial", motion_parameters.move_initial},
+           {"move_final", motion_parameters.move_final},
+           {"move_speed", motion_parameters.move_speed},
+           {"rotation_velocity", motion_parameters.rotation_velocity},
        }}};
 }
 
@@ -116,6 +126,10 @@ void EditorScene::AnimatedEntityElement::add_imgui_edit_section(
           "Model Selection", rendered_entity->mesh_hierarchy)) {
     animation_parameters.animation_id = NONE_ANIMATION;
     rendered_entity->animation_time_seconds = 0.0;
+    // Reset ghosts so they're recreated with the new mesh next sync
+    remove_move_ghosts(render_scene);
+    ghost_initial = nullptr;
+    ghost_final = nullptr;
   }
   scene_context.texture_loader.add_imgui_texture_selector(
       "Diffuse Texture", rendered_entity->render_data.diffuse_texture);
@@ -124,15 +138,6 @@ void EditorScene::AnimatedEntityElement::add_imgui_edit_section(
 
   add_material_imgui_edit_section(render_scene, scene_context);
 
-  ImGui::Spacing();
-  ImGui::Separator();
-  ImGui::Spacing();
-  ImGui::Text("Custom Motion");
-  ImGui::Checkbox("Enable in Play All", &motion_parameters.enabled);
-  ImGui::DragFloat3("Translation (units/s)", &motion_parameters.translation_velocity[0], 0.01f);
-  ImGui::DragDisableCursor(scene_context.window);
-  ImGui::DragFloat3("Rotation (deg/s)", &motion_parameters.rotation_velocity[0], 0.1f);
-  ImGui::DragDisableCursor(scene_context.window);
 }
 
 void EditorScene::AnimatedEntityElement::update_instance_data() {
@@ -150,6 +155,67 @@ void EditorScene::AnimatedEntityElement::update_instance_data() {
 
 const char *EditorScene::AnimatedEntityElement::element_type_name() const {
   return ELEMENT_TYPE_NAME;
+}
+
+glm::mat4 EditorScene::AnimatedEntityElement::calc_ghost_matrix(glm::vec3 ghost_pos) const {
+  glm::mat4 rot = glm::rotate(glm::mat4(1.0f), euler_rotation.x, {1.0f, 0.0f, 0.0f});
+  rot = glm::rotate(rot, euler_rotation.y, {0.0f, 1.0f, 0.0f});
+  rot = glm::rotate(rot, euler_rotation.z, {0.0f, 0.0f, 1.0f});
+  glm::mat4 local = glm::translate(ghost_pos) * rot * glm::scale(scale);
+  if (!is_null(parent)) return (*parent)->transform * local;
+  return local;
+}
+
+void EditorScene::AnimatedEntityElement::sync_move_ghosts(MasterRenderScene &render_scene) {
+  if (motion_parameters.motion_type != CustomMotionType::Move) {
+    if (ghosts_in_scene) remove_move_ghosts(render_scene);
+    return;
+  }
+
+  // Create ghost entities (share mesh and textures, distinct tinted materials)
+  if (!ghost_initial) {
+    ghost_initial = AnimatedEntityRenderer::Entity::create(
+        rendered_entity->mesh_hierarchy,
+        AnimatedEntityRenderer::InstanceData{
+            glm::mat4{1.0f},
+            AnimatedEntityRenderer::EntityMaterial{
+                {0.1f, 0.4f, 1.0f, 1.0f},   // ambient: blue
+                {0.1f, 0.4f, 1.0f, 1.0f},   // diffuse: blue
+                {0.0f, 0.0f, 0.0f, 1.0f},   // no specular
+                1.0f,
+            }},
+        rendered_entity->render_data);
+  }
+  if (!ghost_final) {
+    ghost_final = AnimatedEntityRenderer::Entity::create(
+        rendered_entity->mesh_hierarchy,
+        AnimatedEntityRenderer::InstanceData{
+            glm::mat4{1.0f},
+            AnimatedEntityRenderer::EntityMaterial{
+                {1.0f, 0.5f, 0.1f, 1.0f},   // ambient: orange
+                {1.0f, 0.5f, 0.1f, 1.0f},   // diffuse: orange
+                {0.0f, 0.0f, 0.0f, 1.0f},   // no specular
+                1.0f,
+            }},
+        rendered_entity->render_data);
+  }
+
+  if (!ghosts_in_scene) {
+    render_scene.insert_entity(ghost_initial);
+    render_scene.insert_entity(ghost_final);
+    ghosts_in_scene = true;
+  }
+
+  ghost_initial->instance_data.model_matrix = calc_ghost_matrix(motion_parameters.move_initial);
+  ghost_final->instance_data.model_matrix = calc_ghost_matrix(motion_parameters.move_final);
+}
+
+void EditorScene::AnimatedEntityElement::remove_move_ghosts(MasterRenderScene &render_scene) {
+  if (ghosts_in_scene) {
+    render_scene.remove_entity(ghost_initial);
+    render_scene.remove_entity(ghost_final);
+    ghosts_in_scene = false;
+  }
 }
 
 std::shared_ptr<AnimatedEntityInterface>

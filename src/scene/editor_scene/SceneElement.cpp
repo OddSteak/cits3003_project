@@ -1,6 +1,7 @@
 #include "SceneElement.h"
 #include "scene/SceneContext.h"
 #include "rendering/imgui/ImGuiManager.h"
+#include "rendering/scene/CustomAnimator.h"
 
 void EditorScene::SceneElement::add_imgui_edit_section(MasterRenderScene& /*render_scene*/, const SceneContext& /*scene_context*/) {
     ImGui::InputText("Name", &name, 0);
@@ -201,91 +202,129 @@ json EditorScene::EmissiveMaterialComponent::emissive_material_into_json() const
     }};
 }
 
-void EditorScene::AnimationComponent::add_animation_imgui_edit_section(MasterRenderScene& render_scene, const SceneContext& /*scene_context*/) {
+void EditorScene::AnimationComponent::add_animation_imgui_edit_section(MasterRenderScene& render_scene, const SceneContext& scene_context) {
     ImGui::Spacing();
     ImGui::Separator();
     ImGui::Spacing();
 
     auto entity = get_entity();
     const auto& animations = entity->get_animations();
+    auto* mp = get_motion_params();
 
     ImGui::Text("Animation");
-    std::string selected_animation = "[NONE]";
-    double ticks_per_second = 1.0;
-    double duration_ticks = 0.0;
-    if (get_animation_parameters().animation_id != NONE_ANIMATION) {
-        std::tie(selected_animation, ticks_per_second, duration_ticks) = animations[get_animation_parameters().animation_id];
+
+    // Determine the label shown in the collapsed combo
+    std::string selected_label = "[NONE]";
+    if (mp && mp->motion_type == CustomMotionType::Move) {
+        selected_label = "Move";
+    } else if (mp && mp->motion_type == CustomMotionType::Rotate) {
+        selected_label = "Rotate";
+    } else if (get_animation_parameters().animation_id != NONE_ANIMATION) {
+        selected_label = std::get<0>(animations[get_animation_parameters().animation_id]);
     }
-    if (ImGui::BeginCombo("Animation Selection", selected_animation.c_str(), 0)) {
+
+    if (ImGui::BeginCombo("Animation Selection", selected_label.c_str(), 0)) {
+        // Custom motion entries at the top (only shown when motion params are available)
+        if (mp) {
+            bool move_sel = mp->motion_type == CustomMotionType::Move;
+            if (ImGui::Selectable("Move", move_sel)) {
+                render_scene.animator.stop(entity);
+                get_animation_parameters().animation_id = NONE_ANIMATION;
+                entity->get_animation_time_seconds() = 0.0;
+                mp->motion_type = CustomMotionType::Move;
+            }
+            if (move_sel) ImGui::SetItemDefaultFocus();
+
+            bool rotate_sel = mp->motion_type == CustomMotionType::Rotate;
+            if (ImGui::Selectable("Rotate", rotate_sel)) {
+                render_scene.animator.stop(entity);
+                get_animation_parameters().animation_id = NONE_ANIMATION;
+                entity->get_animation_time_seconds() = 0.0;
+                mp->motion_type = CustomMotionType::Rotate;
+            }
+            if (rotate_sel) ImGui::SetItemDefaultFocus();
+
+            if (!animations.empty()) ImGui::Separator();
+        }
+
+        // Skeletal animations from the model
         for (auto i = 0u; i < animations.size(); ++i) {
             const auto& animation = animations[i];
-            const bool is_selected = i == get_animation_parameters().animation_id;
-            if (ImGui::Selectable(std::get<0>(animation).c_str(), is_selected)) {
+            const bool is_sel = (!mp || mp->motion_type == CustomMotionType::None) &&
+                                i == get_animation_parameters().animation_id;
+            if (ImGui::Selectable(std::get<0>(animation).c_str(), is_sel)) {
                 render_scene.animator.stop(entity);
                 get_animation_parameters().animation_id = i;
                 entity->get_animation_time_seconds() = 0.0;
+                if (mp) mp->motion_type = CustomMotionType::None;
             }
-
-            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-            if (is_selected)
-                ImGui::SetItemDefaultFocus();
+            if (is_sel) ImGui::SetItemDefaultFocus();
         }
-        if (ImGui::Selectable("[NONE]", get_animation_parameters().animation_id == NONE_ANIMATION)) {
+
+        const bool none_sel = (!mp || mp->motion_type == CustomMotionType::None) &&
+                              get_animation_parameters().animation_id == NONE_ANIMATION;
+        if (ImGui::Selectable("[NONE]", none_sel)) {
             render_scene.animator.stop(entity);
             get_animation_parameters().animation_id = NONE_ANIMATION;
             entity->get_animation_time_seconds() = 0.0;
+            if (mp) mp->motion_type = CustomMotionType::None;
         }
-        ImGui::EndCombo();
 
+        ImGui::EndCombo();
         entity->get_animation_id() = get_animation_parameters().animation_id;
     }
-    if (get_animation_parameters().animation_id != NONE_ANIMATION) {
-        std::tie(selected_animation, ticks_per_second, duration_ticks) = animations[get_animation_parameters().animation_id];
 
-        auto float_time = (float) entity->get_animation_time_seconds();
-        auto float_duration = (float) (duration_ticks / ticks_per_second);
+    // Controls for the selected animation type
+    if (mp && mp->motion_type == CustomMotionType::Move) {
+        ImGui::DragFloat3("Initial Position", &mp->move_initial[0], 0.01f);
+        ImGui::DragDisableCursor(scene_context.window);
+        ImGui::DragFloat3("Final Position", &mp->move_final[0], 0.01f);
+        ImGui::DragDisableCursor(scene_context.window);
+        ImGui::DragFloat("Speed (units/s)", &mp->move_speed, 0.01f, 0.001f, 1000.0f);
+        ImGui::DragDisableCursor(scene_context.window);
+        ImGui::Checkbox("Enable in Play All", &mp->enabled);
+
+    } else if (mp && mp->motion_type == CustomMotionType::Rotate) {
+        ImGui::DragFloat3("Rotation (deg/s)", &mp->rotation_velocity[0], 0.1f);
+        ImGui::DragDisableCursor(scene_context.window);
+        ImGui::Checkbox("Enable in Play All", &mp->enabled);
+
+    } else if (get_animation_parameters().animation_id != NONE_ANIMATION) {
+        double ticks_per_second = 1.0;
+        double duration_ticks = 0.0;
+        std::string anim_name;
+        std::tie(anim_name, ticks_per_second, duration_ticks) = animations[get_animation_parameters().animation_id];
+
+        auto float_time = (float)entity->get_animation_time_seconds();
+        auto float_duration = (float)(duration_ticks / ticks_per_second);
         if (ImGui::SliderFloat("Animation Time (sec)", &float_time, 0.0f, float_duration, "%.3f", ImGuiSliderFlags_NoRoundToFormat)) {
             entity->get_animation_time_seconds() = float_time;
         }
 
         bool is_playing = render_scene.animator.is_animating(entity).has_value();
 
-        if (ImGui::Button("Start")) {
-            render_scene.animator.start(entity, get_animation_parameters());
-        }
-
+        if (ImGui::Button("Start")) render_scene.animator.start(entity, get_animation_parameters());
         ImGui::SameLine();
 
         if (!is_playing) ImGui::BeginDisabled();
-        if (ImGui::Button("Pause")) {
-            render_scene.animator.pause(entity);
-        }
+        if (ImGui::Button("Pause")) render_scene.animator.pause(entity);
         if (!is_playing) ImGui::EndDisabled();
-
         ImGui::SameLine();
 
-        if (ImGui::Button("Resume")) {
-            render_scene.animator.resume(entity, get_animation_parameters());
-        }
-
+        if (ImGui::Button("Resume")) render_scene.animator.resume(entity, get_animation_parameters());
         ImGui::SameLine();
 
-        if (ImGui::Button("Stop")) {
-            render_scene.animator.stop(entity);
-        }
-
+        if (ImGui::Button("Stop")) render_scene.animator.stop(entity);
         ImGui::SameLine();
 
         if (ImGui::Checkbox("Loop", &get_animation_parameters().loop) && is_playing) {
             render_scene.animator.update_param(entity, get_animation_parameters());
         }
 
-        auto float_speed = (float) get_animation_parameters().speed;
+        auto float_speed = (float)get_animation_parameters().speed;
         if (ImGui::SliderFloat("Speed", &float_speed, 0.0, 10.0)) {
             get_animation_parameters().speed = float_speed;
-            if (is_playing) {
-                render_scene.animator.update_param(entity, get_animation_parameters());
-            }
+            if (is_playing) render_scene.animator.update_param(entity, get_animation_parameters());
         }
     }
 }

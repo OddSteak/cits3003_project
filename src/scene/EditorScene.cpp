@@ -239,15 +239,28 @@ void EditorScene::EditorScene::add_imgui_selection_editor(const SceneContext& sc
     /// Create an ImGUI window for editing the properties of the currently selected SceneElement.
     if (ImGui::Begin("Selection Editor", nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
         if (is_null(selected_element)) {
+            // Nothing selected: clean up any lingering ghosts
+            if (prev_animated_element != nullptr) {
+                prev_animated_element->remove_move_ghosts(render_scene);
+                prev_animated_element = nullptr;
+            }
             ImGui::Text("No Element Selected");
         } else {
             /// Adds the SceneElements custom property editors
             (*selected_element)->add_imgui_edit_section(render_scene, scene_context);
 
-            /// If it's animated, add those property editors
+            /// If it's animated, add those property editors and sync move ghosts
             auto* animated_selected_element = dynamic_cast<AnimatedEntityElement*>(selected_element->get());
+            if (animated_selected_element != prev_animated_element) {
+                // Selection changed: clean up ghosts on the previously selected element
+                if (prev_animated_element != nullptr) {
+                    prev_animated_element->remove_move_ghosts(render_scene);
+                }
+                prev_animated_element = animated_selected_element;
+            }
             if (animated_selected_element != nullptr) {
                 animated_selected_element->add_animation_imgui_edit_section(render_scene, scene_context);
+                animated_selected_element->sync_move_ghosts(render_scene);
             }
 
             ImGui::Spacing();
@@ -387,6 +400,9 @@ void EditorScene::EditorScene::add_imgui_scene_hierarchy(const SceneContext& sce
             }
 
             (*selected_element)->remove_from_render_scene(render_scene);
+            if (prev_animated_element == dynamic_cast<AnimatedEntityElement*>(selected_element->get())) {
+                prev_animated_element = nullptr;
+            }
             auto p = (*selected_element)->parent;
             if (!is_null(p)) {
                 (*p)->get_children()->erase(selected_element);

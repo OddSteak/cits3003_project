@@ -47,15 +47,28 @@ public:
     target_render_scene.insert_entity(rendered_entity);
   }
 
-  void
-  remove_from_render_scene(MasterRenderScene &target_render_scene) override {
+  void remove_from_render_scene(MasterRenderScene &target_render_scene) override {
     target_render_scene.remove_entity(rendered_entity);
+    remove_move_ghosts(target_render_scene);
   }
+
+  /// Show/update ghost outlines at move_initial and move_final (Move type only).
+  void sync_move_ghosts(MasterRenderScene &render_scene);
+  /// Remove ghost outlines from the render scene.
+  void remove_move_ghosts(MasterRenderScene &render_scene);
 
   [[nodiscard]] std::shared_ptr<AnimatedEntityInterface> get_entity() override;
   [[nodiscard]] AnimationParameters &get_animation_parameters() override;
+  [[nodiscard]] CustomMotionParams* get_motion_params() override { return &motion_parameters; }
 
   [[nodiscard]] const char *element_type_name() const override;
+
+private:
+  std::shared_ptr<AnimatedEntityRenderer::Entity> ghost_initial{};
+  std::shared_ptr<AnimatedEntityRenderer::Entity> ghost_final{};
+  bool ghosts_in_scene = false;
+
+  [[nodiscard]] glm::mat4 calc_ghost_matrix(glm::vec3 ghost_pos) const;
 };
 } // namespace EditorScene
 

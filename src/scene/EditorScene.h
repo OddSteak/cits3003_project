@@ -12,6 +12,7 @@
 
 /// A namespace for all the things related to the EditorScene, since it's rather complicated
 namespace EditorScene {
+    class AnimatedEntityElement; // forward declare for ghost tracking
     /// A complex scene, which is an interactive scene editor that allows the use to add, edit and remove entities and lights.
     /// Also allows saving a scene to file and loading it again.
     class EditorScene : public SceneInterface {
@@ -47,6 +48,9 @@ namespace EditorScene {
         std::optional<std::string> save_path{};
 
         bool is_custom_playing = false;
+
+        // Tracks the last animated element shown in the Selection Editor for ghost cleanup
+        AnimatedEntityElement* prev_animated_element = nullptr;
 
         // The RenderScene of the Scene
         MasterRenderScene render_scene{};
