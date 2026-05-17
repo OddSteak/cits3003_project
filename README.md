@@ -5,6 +5,10 @@ Device:     Lenovo
 Edition:  	Windows 11 Home
 Version:  	25H2
 OS Build:   26200.8547
+OpenGL Vendor: NVIDIA Corporation
+OpenGL Renderer: NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2
+OpenGL Version: 4.3.0 NVIDIA 591.66
+OpenGL Shading Language Version: 4.30 NVIDIA via Cg compiler
 
 Baasil Siddiqui (23895849):
 
