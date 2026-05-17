@@ -4,6 +4,14 @@ Matthew Loo (23639794):
 Device:     Lenovo
 Edition:  	Windows 11 Home
 Version:  	25H2
-OS Build:   26200.8547 
+OS Build:   26200.8547
 
-Baasil Siddiqui 
+Baasil Siddiqui (23895849):
+
+Arch: x86_64
+OS: Arch Linux
+cmake version: 4.3.2
+OpenGL Vendor: Intel
+OpenGL Renderer: Mesa Intel(R) Graphics (MTL)
+OpenGL Version: 4.6 (Core Profile) Mesa 26.0.6-arch1.1
+OpenGL Shading Language Version: 4.60
