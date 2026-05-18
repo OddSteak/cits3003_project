@@ -48,6 +48,7 @@ public:
   }
 
   void remove_from_render_scene(MasterRenderScene &target_render_scene) override {
+    target_render_scene.custom_animator.stop(rendered_entity);
     target_render_scene.remove_entity(rendered_entity);
     remove_move_ghosts(target_render_scene);
   }
